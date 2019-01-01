@@ -110,13 +110,15 @@ class LoginWindow(Frame):
                     break
         else:
             body = message.get_payload()
-        b = BeautifulSoup(body, features="html5lib")
+        b = BeautifulSoup(body)
+        for script in b(["script", "style"]):
+            script.extract()
         text = b.get_text()
         lines = (line.strip() for line in text.splitlines())
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        text = '\n'.join(chunk for chunk in chunks if chunk)
-        print(text)
-        call(["espeak","-v","mb-en1", body], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
+        mail_body = '\n'.join(chunk for chunk in chunks if chunk)
+        print(mail_body)
+        call(["espeak","-v","mb-en1", mail_body], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
             
 if __name__ == '__main__':
     root=Tk()
