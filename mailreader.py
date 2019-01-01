@@ -3,7 +3,7 @@ from tkinter import ttk
 import email
 from email import parser
 import smtplib, poplib
-import subprocess
+from subprocess import call
 
 class SampleApp(Tk):
     def __init__(self):
@@ -93,7 +93,9 @@ class LoginWindow(Frame):
         id_item=self.tree.item(item,"text")
         print("you clicked on", id_item)
         mail_id=int(id_item)-1
-        print(arg[mail_id])
+        #print(arg[mail_id])
+        mail_content = arg[mail_id]
+        self.getBody(mail_content)
         
         
 
@@ -103,10 +105,11 @@ class LoginWindow(Frame):
                 ctype = part.get_content_type()
                 cdispo = str(part.get('Content-Disposition'))
                 if ctype == 'text/plain' and 'attachment' not in cdispo:
-                    body = part.get_payload(decode=True)  # decode
+                    body = part.get_payload()  # decode
                     break
         else:
-            body = message.get_payload(decode=True)
+            body = message.get_payload()
+        print(body)
             
 if __name__ == '__main__':
     root=Tk()
