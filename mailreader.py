@@ -4,6 +4,7 @@ import email
 from email import parser
 import smtplib, poplib
 from subprocess import call
+from bs4 import BeautifulSoup
 
 class SampleApp(Tk):
     def __init__(self):
@@ -104,12 +105,18 @@ class LoginWindow(Frame):
             for part in message.walk():
                 ctype = part.get_content_type()
                 cdispo = str(part.get('Content-Disposition'))
-                if ctype == 'text/plain' and 'attachment' not in cdispo:
+                if ctype == 'text/html' and 'attachment' not in cdispo:
                     body = part.get_payload()  # decode
                     break
         else:
             body = message.get_payload()
-        print(body)
+        b = BeautifulSoup(body, features="html5lib")
+        text = b.get_text()
+        lines = (line.strip() for line in text.splitlines())
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        text = '\n'.join(chunk for chunk in chunks if chunk)
+        print(text)
+        call(["espeak","-v","mb-en1", body], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
             
 if __name__ == '__main__':
     root=Tk()
