@@ -4,7 +4,6 @@ import email
 from email import parser
 import smtplib, poplib
 from subprocess import call
-from bs4 import BeautifulSoup
 
 class SampleApp(Tk):
     def __init__(self):
@@ -82,14 +81,11 @@ class LoginWindow(Frame):
     def getInsideMails(self,messages):
         print ('Inbox: '+str(len(messages)))
         while self.i<len(messages):
-            #print ('['+str(self.i+1)+'] ',messages[self.i]['from'], messages[self.i]['subject'])
             self.treeview.insert('', 'end', text=str(self.i+1), values=(messages[self.i]['from'], messages[self.i]['subject']))
             self.i=self.i+1
         self.tree.bind("<Double-1>", lambda event, arg=messages: self.OnDoubleClick(event, arg))
 
     def OnDoubleClick(self, event, arg):
-        #curItem = self.tree.focus()
-        #print (self.tree.item(curItem))
         item = self.tree.selection()[0]
         id_item=self.tree.item(item,"text")
         print("you clicked on", id_item)
@@ -98,27 +94,25 @@ class LoginWindow(Frame):
         mail_content = arg[mail_id]
         self.getBody(mail_content)
         
-        
 
     def getBody(self, message):
+        print(message["from"])
+        call(["espeak","-v","mb-en1", message["from"]], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
+        print(message["subject"])
+        call(["espeak","-v","mb-en1", message["subject"]], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
         if message.is_multipart():
             for part in message.walk():
                 ctype = part.get_content_type()
                 cdispo = str(part.get('Content-Disposition'))
-                if ctype == 'text/html' and 'attachment' not in cdispo:
+                if ctype == 'text/plain' and 'attachment' not in cdispo:
                     body = part.get_payload()  # decode
+                    body = body.replace("\r"," ")
+                    body = body.replace("\n"," ")
                     break
         else:
             body = message.get_payload()
-        b = BeautifulSoup(body)
-        for script in b(["script", "style"]):
-            script.extract()
-        text = b.get_text()
-        lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        mail_body = '\n'.join(chunk for chunk in chunks if chunk)
-        print(mail_body)
-        call(["espeak","-v","mb-en1", mail_body], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
+        print(body)
+        call(["espeak","-v","mb-en1", body], cwd="C:\\Program Files (x86)\\eSpeak\\command_line", shell=True)
             
 if __name__ == '__main__':
     root=Tk()
